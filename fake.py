@@ -15,9 +15,22 @@ nltk.download('stopwords')
 
 # Load datasets
 @st.cache_data
-def load_data():
-    df_True = pd.read_csv('True.csv')
-    df_False = pd.read_csv('Fake.csv')
+def load_data(zip_path):
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        # List files in ZIP
+        file_list = z.namelist()
+        
+        # Check if our files exist
+        if 'True.csv' not in file_list or 'Fake.csv' not in file_list:
+            raise FileNotFoundError("Required CSV files not found in ZIP archive")
+        
+        # Read True.csv
+        with z.open('True.csv') as f:
+            df_True = pd.read_csv(io.BytesIO(f.read()))
+        
+        # Read Fake.csv
+        with z.open('Fake.csv') as f:
+            df_False = pd.read_csv(io.BytesIO(f.read()))
 
     df_True['label'] = 'True'
     df_False['label'] = 'Fake'
